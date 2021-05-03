@@ -65,31 +65,24 @@ class PostUpdateRepository
 			$original_modifed_date_gmt = get_post_modified_time('Y-m-d H:i:s', true, $post_id);
 
 			// Reset the modified date to the last modified date
-			if ( !$filtered ) :
-				$query = $wpdb->prepare(
-					"UPDATE $wpdb->posts 
-					SET menu_order = '%d', post_parent = '%d', post_modified = '%s', post_modified_gmt = '%s' 
-					WHERE ID = '%d'", 
-					intval($key), 
-					intval($parent),
-					$original_modifed_date, 
-					$original_modifed_date_gmt, 
-					intval($post_id)
-				);
-			else : // The posts are filtered, don't update the parent
-				$query = $wpdb->prepare(
-					"UPDATE $wpdb->posts 
-					SET menu_order = '%d', post_modified = '%s', post_modified_gmt = '%s' 
-					WHERE ID = '%d'", 
-					intval($key), 
-					$original_modifed_date, 
-					$original_modifed_date_gmt, 
-					intval($post_id)
-				); 
-			endif;
+      if ( !$filtered ) {
+        wp_update_post([
+          'ID' => intval( $post_id ),
+          'menu_order' => intval( $key ),
+          'post_parent' => intval( $parent ),
+          'post_modified' => $original_modifed_date,
+          'post_modified_gmt' => $original_modifed_date_gmt,
+        ]);
+      } else { // The posts are filtered, don't update the parent
+        wp_update_post([
+          'ID' => intval( $post_id ),
+          'menu_order' => intval( $key ),
+          'post_modified' => $original_modifed_date,
+          'post_modified_gmt' => $original_modifed_date_gmt,
+        ]);
+      }
 
-			$wpdb->query( $query );
-			do_action('nestedpages_post_order_updated', $post_id, $parent, $key, $filtered);
+      do_action('nestedpages_post_order_updated', $post_id, $parent, $key, $filtered);
 
 			if ( isset($post['children']) ) $this->updateOrder($post['children'], $post_id);
 		}
