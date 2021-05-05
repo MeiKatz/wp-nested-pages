@@ -57,7 +57,6 @@ class PostUpdateRepository
 		$this->validation->validatePostIDs($posts);
 		$post_type = get_post_type($posts[0]['id']);
 		if ( !$this->user_repo->canSortPosts($post_type) ) return;
-		global $wpdb;
 		foreach( $posts as $key => $post )
 		{
 			$post_id = sanitize_text_field($post['id']);
